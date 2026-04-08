@@ -1,0 +1,44 @@
+name: Terraform CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  terraform-cd:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ secrets.AWS_REGION }}
+
+      # 🔹 INIT
+      - name: Terraform Init
+        run: terraform init
+
+      # 🔹 VALIDATE
+      - name: Terraform Validate
+        run: terraform validate
+
+      # 🔹 FORMAT
+      - name: Terraform Format
+        run: terraform fmt
+
+      # 🔹 PLAN
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      # 🔹 APPLY
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
